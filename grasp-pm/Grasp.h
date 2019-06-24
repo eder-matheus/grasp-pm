@@ -8,6 +8,9 @@
 #include <string>
 #include <fstream>
 #include <random>
+#include <utility>
+
+#define ELITE_TOTAL 10
 
 class Grasp {
 public:
@@ -28,12 +31,15 @@ public:
     
     int evaluateSolution(const std::vector<int> &);
     
+    void addEliteSolution(const std::pair<std::vector<int>, int> &);
+    
 private:
     // attributes
     int machines;
     int tasks;
     std::vector<std::vector<int>> procTimes;
     std::vector<std::vector<std::vector<int>>> setupTimes;
+    std::vector<std::pair<std::vector<int>, int>> eliteSolutions;
 };
 
 #endif /* GRASP_H */
