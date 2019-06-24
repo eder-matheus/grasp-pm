@@ -7,7 +7,7 @@
 #include <fstream>
 #include <limits>
 
-Parser::Parser(const std::string fileName): inputFile(fileName) {
+Parser::Parser(const std::string &fileName): inputFile(fileName) {
     std::cout << "File name: " << fileName << "\n";
    std::ifstream input(fileName);
    if (!input) {

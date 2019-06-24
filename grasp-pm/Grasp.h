@@ -11,8 +11,7 @@
 
 class Grasp {
 public:
-    Grasp(const std::string);
-    Grasp(const Grasp& orig);
+    Grasp(const std::string &);
     virtual ~Grasp();
     
     int getMachines() const;

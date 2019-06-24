@@ -10,7 +10,7 @@
 
 class Parser {
 public:
-    Parser(const std::string);
+    Parser(const std::string &);
     virtual ~Parser();
 
     int getQtdMachines() const;

@@ -1,6 +1,6 @@
 #include "Grasp.h"
 
-Grasp::Grasp(const std::string inputFile) {
+Grasp::Grasp(const std::string &inputFile) {
     // Initializing structures
     Parser parser(inputFile);
     
@@ -8,9 +8,6 @@ Grasp::Grasp(const std::string inputFile) {
     tasks = parser.getQtdTasks();
     procTimes = parser.getProcTimes();
     setupTimes = parser.getSetupTimes();
-}
-
-Grasp::Grasp(const Grasp& orig) {
 }
 
 Grasp::~Grasp() {
