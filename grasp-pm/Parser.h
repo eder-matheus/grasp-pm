@@ -20,10 +20,6 @@ public:
     std::vector<std::vector<int>> getProcTimes() const;
     int getSetupTime(int, int, int) const;
     std::vector<std::vector<std::vector<int>>> getSetupTimes() const;
-    int getGijk(int, int, int) const;
-
-    const char *getName() const;
-    void writeFile(const std::string) const;
 
 protected:
     const std::string inputFile;
