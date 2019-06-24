@@ -11,15 +11,25 @@
  * Created on June 23, 2019, 8:55 PM
  */
 
+#include <iostream>
 #include <cstdlib>
+#include <vector>
+#include <string>
+#include <fstream>
+#include <limits>
 
-using namespace std;
+#include "Parser.h"
 
-/*
- * 
- */
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
+   if (argc != 2) {
+      std::cout << "Usage: " << argv[0] << " <instance file>\n";
+      return -1;
+   }
 
-    return 0;
+   Parser inst(argv[1]);
+   inst.writeFile("pmsp.txt");
+
+   return 0;
 }
+
 
