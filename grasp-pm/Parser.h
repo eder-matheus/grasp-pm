@@ -1,16 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/* 
- * File:   Parser.h
- * Author: emrmonteiro
- *
- * Created on June 23, 2019, 8:56 PM
- */
-
 #include <iostream>
 #include <cstdlib>
 #include <vector>
@@ -23,25 +10,27 @@
 
 class Parser {
 public:
-   Parser(const char *fname);
-   virtual ~Parser();
+    Parser(const std::string);
+    virtual ~Parser();
 
-   int getNumMachines() const;
-   int getNumJobs() const;
+    int getQtdMachines() const;
+    int getQtdTasks() const;
 
-   int getProcTime(int job, int machine) const;
-   int getSetupTime(int predJob, int succJob, int machine) const;
-   int getGijk(int predJob, int succJob, int machine) const;
+    int getProcTime(int, int) const;
+    std::vector<std::vector<int>> getProcTimes() const;
+    int getSetupTime(int, int, int) const;
+    std::vector<std::vector<std::vector<int>>> getSetupTimes() const;
+    int getGijk(int, int, int) const;
 
-   const char *getName() const;
-   void writeFile(const char *fname) const;
+    const char *getName() const;
+    void writeFile(const std::string) const;
 
 protected:
-   const std::string m_name;
-   int m_num;
-   int m_numMachines, m_numJobs;
-   std::vector <std::vector <int> > m_procTimes; // [job][machine]
-   std::vector <std::vector <std::vector <int> > > m_setupTimes; // [pred job][succ job][machine]
+    const std::string inputFile;
+    int m_num;
+    int qtdMachines, qtdTasks;
+    std::vector<std::vector<int>> procTimes; // [job][machine]
+    std::vector<std::vector<std::vector<int>>> setupTimes; // [pred job][succ job][machine]
 };
 
 #endif /* PARSER_H */

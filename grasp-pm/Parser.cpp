@@ -1,16 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/* 
- * File:   Parser.cpp
- * Author: emrmonteiro
- * 
- * Created on June 23, 2019, 8:57 PM
- */
-
 #include "Parser.h"
 
 #include <iostream>
@@ -20,96 +7,103 @@
 #include <fstream>
 #include <limits>
 
-Parser::Parser(const char* fname): m_name(fname) {
-    std::cout << "File name: " << fname << "\n";
-   std::ifstream fid(fname);
-   if (!fid) {
-      std::cout << "Instance file could not be open to read.\n";
+Parser::Parser(const std::string fileName): inputFile(fileName) {
+    std::cout << "File name: " << fileName << "\n";
+   std::ifstream input(fileName);
+   if (!input) {
+      std::cout << "Error: input file could not be open\n";
       std::abort();
    }
 
-   fid >> m_num >> m_numMachines >> m_numJobs;
+   input >> m_num >> qtdMachines >> qtdTasks;
 
-   m_procTimes.resize(m_numJobs);
-   m_setupTimes.resize(m_numJobs);
-   for (int i = 0; i < m_numJobs; ++i) {
-      m_procTimes[i].resize(m_numMachines, std::numeric_limits<int>::max());
-      m_setupTimes[i].resize(m_numJobs);
-      for (int j = 0; j < m_numJobs; ++j) {
-         m_setupTimes[i][j].resize(m_numMachines, std::numeric_limits<int>::max());
+   procTimes.resize(qtdTasks);
+   setupTimes.resize(qtdTasks);
+   for (int i = 0; i < qtdTasks; ++i) {
+      procTimes[i].resize(qtdMachines, std::numeric_limits<int>::max());
+      setupTimes[i].resize(qtdTasks);
+      for (int j = 0; j < qtdTasks; ++j) {
+         setupTimes[i][j].resize(qtdMachines, std::numeric_limits<int>::max());
       }
    }
 
-   for (int i = 0; i < m_numJobs; ++i) {
-      for (int j = 0; j < m_numMachines; ++j) {
-         fid >> m_procTimes[i][j];
+   for (int i = 0; i < qtdTasks; ++i) {
+      for (int j = 0; j < qtdMachines; ++j) {
+         input >> procTimes[i][j];
       }
    }
 
-   for (int k = 0; k < m_numMachines; ++k) {
-      for (int i = 0; i < m_numJobs; ++i) {
-         for (int j = 0; j < m_numJobs; ++j) {
-            fid >> m_setupTimes[i][j][k];
+   for (int k = 0; k < qtdMachines; ++k) {
+      for (int i = 0; i < qtdTasks; ++i) {
+         for (int j = 0; j < qtdTasks; ++j) {
+            input >> setupTimes[i][j][k];
          }
       }
    }
-
 }
 
 Parser::~Parser() {
    // Empty
 }
 
-int Parser::getNumMachines() const {
-   return m_numMachines;
+int Parser::getQtdMachines() const {
+   return qtdMachines;
 }
 
-int Parser::getNumJobs() const {
-   return m_numJobs;
+int Parser::getQtdTasks() const {
+   return qtdTasks;
 }
 
-int Parser::getProcTime(int job, int machine) const {
-   return m_procTimes[job][machine];
+int Parser::getProcTime(int task, int machine) const {
+   return procTimes[task][machine];
 }
 
-int Parser::getSetupTime(int predJob, int succJob, int machine) const {
-   return m_setupTimes[predJob][succJob][machine];
+std::vector<std::vector<int>> Parser::getProcTimes() const {
+    return procTimes;
 }
 
-int Parser::getGijk(int predJob, int succJob, int machine) const {
-   return getProcTime(succJob, machine) + getSetupTime(predJob, succJob, machine);
+int Parser::getSetupTime(int predTask, int succTask, int machine) const {
+   return setupTimes[predTask][succTask][machine];
+}
+
+std::vector<std::vector<std::vector<int>>> Parser::getSetupTimes() const {
+    return setupTimes;
+}
+
+int Parser::getGijk(int predTask, int succTask, int machine) const {
+   return getProcTime(succTask, machine) + getSetupTime(predTask, succTask, machine);
 }
 
 const char *Parser::getName() const {
-   return m_name.c_str();
+   return inputFile.c_str();
 }
 
-void Parser::writeFile(const char* fname) const {
-   std::ofstream fid("out.txt", std::ofstream::out);
-   if (!fid) {
-      std::cout << "Output file could not be open to write.\n";
+void Parser::writeFile(const std::string fileName) const {
+   std::ofstream output("out.txt", std::ofstream::out);
+   if (!output) {
+      std::cout << "Error: output file could not be created\n";
       std::abort();
    }
 
-   fid << m_num << '\n' << m_numMachines << '\n' << m_numJobs << "\n\n";
+   output << m_num << '\n' << qtdMachines << '\n' << qtdTasks << "\n\n";
 
-   for (int i = 0; i < m_numJobs; ++i) {
-      for (int j = 0; j < m_numMachines; ++j) {
-         fid << m_procTimes[i][j] << ' ';
+   for (int i = 0; i < qtdTasks; ++i) {
+      for (int j = 0; j < qtdMachines; ++j) {
+         output << procTimes[i][j] << ' ';
       }
-      fid << '\n';
+      output << '\n';
    }
-   fid << "\n";
+   output << "\n";
 
-   for (int k = 0; k < m_numMachines; ++k) {
-      for (int i = 0; i < m_numJobs; ++i) {
-         for (int j = 0; j < m_numJobs; ++j) {
-            fid << m_setupTimes[i][j][k] << ' ';
+   for (int k = 0; k < qtdMachines; ++k) {
+      for (int i = 0; i < qtdTasks; ++i) {
+         for (int j = 0; j < qtdTasks; ++j) {
+            output << setupTimes[i][j][k] << ' ';
          }
-         fid << "\n";
+         output << "\n";
       }
-      fid << "\n";
+      output << "\n";
    }
    
-   fid.close();
+   output.close();
 }
