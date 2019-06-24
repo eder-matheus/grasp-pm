@@ -19,6 +19,9 @@ int main(int argc, char **argv) {
    grasp.printStructures();
    std::vector<int> Si;
    Si = grasp.createInitialSolution(seed);
+   
+   int cost = grasp.evaluateSolution(Si);
+   std::cout << "Solution cost: " << cost << "\n";
 
    return 0;
 }

@@ -26,6 +26,8 @@ public:
     
     std::vector<int> createInitialSolution(long);
     
+    int evaluateSolution(const std::vector<int> &);
+    
 private:
     // attributes
     int machines;
