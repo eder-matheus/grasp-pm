@@ -7,7 +7,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include <limits>
+#include <random>
 
 class Grasp {
 public:
@@ -20,7 +20,11 @@ public:
     int getProcTime(int, int) const;
     int getSetupTime(int, int, int) const;
     
+    int getTotalTime(int, int, int) const;
+    
     void printStructures();
+    
+    std::vector<int> createInitialSolution(long);
     
 private:
     // attributes
@@ -28,9 +32,6 @@ private:
     int tasks;
     std::vector<std::vector<int>> procTimes;
     std::vector<std::vector<std::vector<int>>> setupTimes;
-
-    // methods
-    int getTotalTime(int, int, int) const;
 };
 
 #endif /* GRASP_H */

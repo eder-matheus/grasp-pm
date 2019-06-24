@@ -40,7 +40,7 @@ void Grasp::printStructures() {
       std::abort();
    }
 
-   output << "9090" << '\n' << machines << '\n' << tasks << "\n\n";
+   output << "#?" << '\n' << machines << '\n' << tasks << "\n\n";
 
    for (int i = 0; i < tasks; ++i) {
       for (int j = 0; j < machines; ++j) {
@@ -61,4 +61,17 @@ void Grasp::printStructures() {
    }
    
    output.close();
+}
+
+std::vector<int> Grasp::createInitialSolution(long seed) {
+    // engine to generate the pseudo-random numbers
+    std::default_random_engine dre(seed);
+    // distribution of the pseudo-random numbers
+    // 
+    std::uniform_int_distribution<int> dist(0, (machines-1));
+    
+    std::vector<int> solution(tasks);
+    std::generate(solution.begin(), solution.end(), [&]{ return dist(dre);});
+    
+    return solution;
 }
