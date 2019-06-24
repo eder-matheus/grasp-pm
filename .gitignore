@@ -1,2 +1,5 @@
 /grasp-pm/build/
 /grasp-pm/dist/
+/grasp-pm-nbproject/
+.DS_Store
+/grasp-pm/.DS_Store
