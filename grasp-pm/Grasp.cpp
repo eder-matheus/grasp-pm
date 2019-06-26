@@ -1,4 +1,5 @@
 #include "Grasp.h"
+#include <algorithm>
 
 Grasp::Grasp(const std::string &inputFile) {
     // Initializing structures
@@ -131,7 +132,7 @@ std::vector<std::vector<int>> Grasp::createInitialSolution() {
 // -----------------------------------------------------------------------------
 
 std::vector<std::vector<int>> Grasp::greedRandomizedSolution(float alpha, long seed) {
-    auto sort = [](std::tuple<int, int, int> c1,
+    auto Sort = [](std::tuple<int, int, int> c1,
             std::tuple<int, int, int> c2) -> bool {
                 return std::get<2>(c1) < std::get<2>(c2);
             };
@@ -171,7 +172,7 @@ std::vector<std::vector<int>> Grasp::greedRandomizedSolution(float alpha, long s
             }
         }
 
-        std::sort(candidates.begin(), candidates.end(), sort);
+	std::sort(candidates.begin(), candidates.end(), Sort);
 
         std::tuple<int, int, int> choosenCandidate;
 
@@ -274,7 +275,7 @@ int Grasp::evaluateSolution(const std::vector<int> &solution, int machine) {
 // -----------------------------------------------------------------------------
 
 void Grasp::addEliteSolution(const std::pair<std::vector<std::vector<int>>, int> &solution) {
-    auto sort = [](std::pair<std::vector<std::vector<int>>, int> s1,
+    auto Sort = [](std::pair<std::vector<std::vector<int>>, int> s1,
             std::pair<std::vector<std::vector<int>>, int> s2) -> bool {
                 return s1.second < s2.second;
             };
@@ -290,7 +291,7 @@ void Grasp::addEliteSolution(const std::pair<std::vector<std::vector<int>>, int>
         return;
     }
 
-    std::sort(eliteSolutions.begin(), eliteSolutions.end(), sort);
+    std::sort(eliteSolutions.begin(), eliteSolutions.end(), Sort);
 } // end method
 
 // -----------------------------------------------------------------------------
