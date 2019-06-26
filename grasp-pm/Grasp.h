@@ -28,7 +28,9 @@ public:
     
     void printStructures();
     
-    std::vector<std::vector<int>> createInitialSolution(long);
+    std::vector<std::vector<int>> createInitialSolution();
+    
+    std::vector<std::vector<int>> greedRandomizedSolution(float alpha, long seed);
     
     int evaluateSolution(const std::vector<int> &solution, int machine);
     
