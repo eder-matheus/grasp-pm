@@ -189,7 +189,7 @@ std::vector<std::vector<int>> Grasp::greedRandomizedSolution(float alpha, long s
         
         int idx = -1;
         for (int i = 0; i < tasks.size(); i++) {
-            if (tasks[i] == std::get<0>(bestCandidate)) {
+            if (tasks[i] == std::get<0>(choosenCandidate)) {
                 idx = i;
                 break;
             }
