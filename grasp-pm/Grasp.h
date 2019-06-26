@@ -26,24 +26,30 @@ public:
     
     int getTotalTime(int, int, int) const;
     
+    std::vector<std::pair<std::vector<std::vector<int>>, int>> getEliteSolutions()
+    { return eliteSolutions; }
+    
     void printStructures();
     
     std::vector<std::vector<int>> createInitialSolution();
     
     std::vector<std::vector<int>> greedRandomizedSolution(float alpha, long seed);
     
-    int evaluateSolution(const std::vector<int> &solution, int machine);
+    std::vector<std::vector<int>> localSearch(const std::vector<std::vector<int>> &, long);
     
-    void addEliteSolution(const std::pair<std::vector<int>, int> &);
+    int selectWorstTimeTask(const std::vector<int> &, int);
+    
+    int evaluateSolution(const std::vector<int> &, int);
+    
+    void addEliteSolution(const std::pair<std::vector<std::vector<int>>, int> &);
     
 private:
-    // attributes
     int numMachines;
     int numTasks;
     std::vector<std::vector<int>> tasksPerMachine;
     std::vector<std::vector<int>> procTimes;
     std::vector<std::vector<std::vector<int>>> setupTimes;
-    std::vector<std::pair<std::vector<int>, int>> eliteSolutions;
+    std::vector<std::pair<std::vector<std::vector<int>>, int>> eliteSolutions;
 };
 
 #endif /* GRASP_H */

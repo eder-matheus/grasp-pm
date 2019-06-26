@@ -22,39 +22,57 @@ int main(int argc, char **argv) {
     Grasp grasp(argv[1]);
     grasp.printStructures();
     std::vector<std::vector<int>> Si;
-    std::cout << "-Initial solution\n";
     Si = grasp.createInitialSolution();
 
     for (int i = 0; i < Si.size(); i++) {
         int cost = 0;
         cost = grasp.evaluateSolution(Si[i], i);
-        std::cout << "--Machine " << i << ": \n";
-        std::cout << "---Cost " << cost << "\n";
-        for (int j = 0; j < Si[i].size(); j++) {
-            std::cout << "\t Task " << Si[i][j] << "\n";
-        }
     }
 
-    int counter = 0;
+    int noImprovement = 0;
     std::vector<std::vector<int>> partialSolution;
+    std::vector<std::vector<int>> localSearchSol;
+    int lastCost = std::numeric_limits<int>::max();
+    int counter = 100;
     do {
-        std::cout << "\n ----------------------------------\n";
-        std::cout << "-Solution #" << counter << "\n";
         partialSolution = grasp.greedRandomizedSolution(alpha, seed*counter);
-
+            
+        int worstCost;
+        int worstCostPartial = 0;
+        int worstCostLocal = 0;
         for (int i = 0; i < partialSolution.size(); i++) {
-            int cost = 0;
-            cost = grasp.evaluateSolution(partialSolution[i], i);
-            std::cout << "--Machine " << i << ": \n";
-            std::cout << "---Cost " << cost << "\n";
-            for (int j = 0; j < partialSolution[i].size(); j++) {
-                std::cout << "\t Task " << partialSolution[i][j] << "\n";
-            }
+            int machineCost = grasp.evaluateSolution(partialSolution[i], i);
+            if (machineCost > worstCostPartial)
+                worstCostPartial = machineCost;
         }
-        counter++;
-    } while (counter < 5);
+        
+        localSearchSol = grasp.localSearch(partialSolution, seed);
+        
+        for (int i = 0; i < localSearchSol.size(); i++) {
+            int machineCost = grasp.evaluateSolution(localSearchSol[i], i);
+            if (machineCost > worstCostLocal)
+                worstCostLocal = machineCost;
+        }
+        
+        if (worstCostLocal <= worstCostPartial) {
+            worstCost = worstCostLocal;
+            grasp.addEliteSolution(std::make_pair(localSearchSol, worstCost));
+        } else {
+            worstCost = worstCostPartial;
+            grasp.addEliteSolution(std::make_pair(partialSolution, worstCost));
+        }
+        
+        if (worstCost < lastCost) {
+            lastCost = worstCost;
+        } else {
+            noImprovement++;
+        }
+        
+        counter--;
+    } while (noImprovement < 1000);
+    
+    std::vector<std::pair<std::vector<std::vector<int>>, int>> elite = grasp.getEliteSolutions();
+    std::cout << "Final cost: " << elite.back().second << "\n";
 
     return 0;
 }
-
-

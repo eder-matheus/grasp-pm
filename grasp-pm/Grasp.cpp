@@ -113,7 +113,7 @@ std::vector<std::vector<int>> Grasp::createInitialSolution() {
         }
 
         solution[std::get<1>(bestCandidate)].push_back(std::get<0>(bestCandidate));
-        
+
         int idx = -1;
         for (int i = 0; i < tasks.size(); i++) {
             if (tasks[i] == std::get<0>(bestCandidate)) {
@@ -121,7 +121,7 @@ std::vector<std::vector<int>> Grasp::createInitialSolution() {
                 break;
             }
         }
-        
+
         tasks.erase(tasks.begin() + idx);
     }
 
@@ -132,7 +132,7 @@ std::vector<std::vector<int>> Grasp::createInitialSolution() {
 
 std::vector<std::vector<int>> Grasp::greedRandomizedSolution(float alpha, long seed) {
     auto sort = [](std::tuple<int, int, int> c1,
-                   std::tuple<int, int, int> c2) -> bool {
+            std::tuple<int, int, int> c2) -> bool {
                 return std::get<2>(c1) < std::get<2>(c2);
             };
 
@@ -148,6 +148,7 @@ std::vector<std::vector<int>> Grasp::greedRandomizedSolution(float alpha, long s
     for (int k = 0; k < numMachines; k++)
         machines.push_back(k);
 
+    int seedInc = 0;
     while (tasks.size() > 0) {
         std::tuple<int, int, int> bestCandidate = std::make_tuple(-1, -1,
                 std::numeric_limits<int>::max());
@@ -169,24 +170,24 @@ std::vector<std::vector<int>> Grasp::greedRandomizedSolution(float alpha, long s
                 }
             }
         }
-        
+
         std::sort(candidates.begin(), candidates.end(), sort);
 
         std::tuple<int, int, int> choosenCandidate;
 
         // engine to generate the pseudo-random numbers
-        std::default_random_engine dre(seed);
+        std::default_random_engine dre(seed + seedInc);
         // distribution of the pseudo-random numbers
-        std::uniform_int_distribution<int> dist(0, ((candidates.size()*alpha) - 1));
+        std::uniform_int_distribution<int> dist(0, ((candidates.size() * alpha) - 1));
 
         int choosenIdx = dist(dre);
         choosenCandidate = candidates[choosenIdx];
 
         solution[std::get<1>(choosenCandidate)].push_back(std::get<0>(choosenCandidate));
-        
+
         for (int t : tasks) {
         }
-        
+
         int idx = -1;
         for (int i = 0; i < tasks.size(); i++) {
             if (tasks[i] == std::get<0>(choosenCandidate)) {
@@ -194,12 +195,64 @@ std::vector<std::vector<int>> Grasp::greedRandomizedSolution(float alpha, long s
                 break;
             }
         }
-        
+
         tasks.erase(tasks.begin() + idx);
         candidates.clear();
+        seedInc++;
     }
 
     return solution;
+} // end method
+
+// -----------------------------------------------------------------------------
+
+std::vector<std::vector<int>> Grasp::localSearch(const std::vector<std::vector<int>> &solution, long seed) {
+    // Perturbation 1
+    int worstCost = 0;
+    int worstId;
+    int bestCost = std::numeric_limits<int>::max();
+    int bestId;
+
+    std::vector<std::vector<int>> newSolution = solution;
+
+    for (int i = 0; i < newSolution.size(); i++) {
+        int machineCost = evaluateSolution(newSolution[i], i);
+        if (machineCost > worstCost) {
+            worstCost = machineCost;
+            worstId = i;
+        }
+        if (machineCost < bestCost) {
+            bestCost = machineCost;
+            bestId = i;
+        }
+    }
+    
+    int worstTask = selectWorstTimeTask(newSolution[worstId], worstId);
+    
+    newSolution[bestId].push_back(worstTask);
+
+    return newSolution;
+} // end method
+
+// -----------------------------------------------------------------------------
+
+int Grasp::selectWorstTimeTask(const std::vector<int> &machineTasks, int machine) {
+    int choosedTask;
+    int worstCost;
+    for (int i = 0; i < machineTasks.size(); i++) {
+        if (i == 0) {
+            worstCost = getProcTime(machineTasks[i], machine);
+        } else {
+            int cost = getTotalTime(machineTasks[i-1], machineTasks[i],
+                                    machine);
+            if (cost > worstCost) {
+                worstCost = cost;
+                choosedTask = machineTasks[i];
+            }
+        }
+    }
+    
+    return choosedTask;
 } // end method
 
 // -----------------------------------------------------------------------------
@@ -211,7 +264,7 @@ int Grasp::evaluateSolution(const std::vector<int> &solution, int machine) {
         if (i == 0) {
             cost = getProcTime(solution[i], machine);
         } else {
-           cost += getTotalTime(solution[i - 1], solution[i], machine);
+            cost += getTotalTime(solution[i - 1], solution[i], machine);
         }
     }
 
@@ -220,12 +273,16 @@ int Grasp::evaluateSolution(const std::vector<int> &solution, int machine) {
 
 // -----------------------------------------------------------------------------
 
-void Grasp::addEliteSolution(const std::pair<std::vector<int>, int> &solution) {
-    auto sort = [](std::pair<std::vector<int>, int> s1,
-            std::pair<std::vector<int>, int> s2) -> bool {
+void Grasp::addEliteSolution(const std::pair<std::vector<std::vector<int>>, int> &solution) {
+    auto sort = [](std::pair<std::vector<std::vector<int>>, int> s1,
+            std::pair<std::vector<std::vector<int>>, int> s2) -> bool {
                 return s1.second < s2.second;
             };
 
+    if (eliteSolutions.size() == 0) {
+        eliteSolutions.push_back(solution);
+    }
+            
     if (solution.second < eliteSolutions.back().second) {
         eliteSolutions.pop_back();
         eliteSolutions.push_back(solution);
