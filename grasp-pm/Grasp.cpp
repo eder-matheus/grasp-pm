@@ -4,10 +4,11 @@ Grasp::Grasp(const std::string &inputFile) {
     // Initializing structures
     Parser parser(inputFile);
 
-    machines = parser.getQtdMachines();
-    tasks = parser.getQtdTasks();
+    numMachines = parser.getQtdMachines();
+    numTasks = parser.getQtdTasks();
     procTimes = parser.getProcTimes();
     setupTimes = parser.getSetupTimes();
+    tasksPerMachine.resize(numMachines);
 } // end method
 
 // -----------------------------------------------------------------------------
@@ -17,14 +18,14 @@ Grasp::~Grasp() {
 
 // -----------------------------------------------------------------------------
 
-int Grasp::getMachines() const {
-    return machines;
+int Grasp::getNumMachines() const {
+    return numMachines;
 } // end method
 
 // -----------------------------------------------------------------------------
 
-int Grasp::getTasks() const {
-    return tasks;
+int Grasp::getNumTasks() const {
+    return numTasks;
 } // end method
 
 // -----------------------------------------------------------------------------
@@ -36,6 +37,8 @@ int Grasp::getProcTime(int task, int machine) const {
 // -----------------------------------------------------------------------------
 
 int Grasp::getSetupTime(int predTask, int succTask, int machine) const {
+    if (predTask == succTask)
+        return 0;
     return setupTimes[predTask][succTask][machine];
 } // end method
 
@@ -54,19 +57,19 @@ void Grasp::printStructures() {
         std::abort();
     } // end if
 
-    output << "#?" << '\n' << machines << '\n' << tasks << "\n\n";
+    output << "#?" << '\n' << numMachines << '\n' << numTasks << "\n\n";
 
-    for (int i = 0; i < tasks; ++i) {
-        for (int j = 0; j < machines; ++j) {
+    for (int i = 0; i < numTasks; ++i) {
+        for (int j = 0; j < numMachines; ++j) {
             output << procTimes[i][j] << ' ';
         } // end for
         output << '\n';
     } // end for
     output << "\n";
 
-    for (int k = 0; k < machines; ++k) {
-        for (int i = 0; i < tasks; ++i) {
-            for (int j = 0; j < tasks; ++j) {
+    for (int k = 0; k < numMachines; ++k) {
+        for (int i = 0; i < numTasks; ++i) {
+            for (int j = 0; j < numTasks; ++j) {
                 output << setupTimes[i][j][k] << ' ';
             } // end for
             output << "\n";
@@ -79,40 +82,58 @@ void Grasp::printStructures() {
 
 // -----------------------------------------------------------------------------
 
-std::vector<int> Grasp::createInitialSolution(long seed) {
-    // engine to generate the pseudo-random numbers
-    std::default_random_engine engine(seed);
-    // distribution of the pseudo-random numbers
-    std::uniform_int_distribution<int> dist(0, (machines - 1));
-
-    std::vector<int> solution(tasks);
-    std::generate(solution.begin(), solution.end(), [&] {
-        return dist(engine);
-    });
-
-    std::cout << "Solution size: " << solution.size() << "\n";
-    std::cout << "{";
-    for (int s : solution) {
-        std::cout << s << ", ";
+std::vector<std::vector<int>> Grasp::createInitialSolution(long seed) {
+    std::vector<int> machines;
+    std::vector<int> tasks;
+    
+    std::vector<std::vector<int>> solution;
+    solution.resize(numMachines);
+    
+    for (int j = 0; j < numTasks; j++)
+        tasks.push_back(j);
+    for (int k = 0; k < numMachines; k++)
+        machines.push_back(k);
+    
+    while (tasks.size() > 0) {
+        std::tuple<int, int, int> bestCandidate = std::make_tuple(-1, -1, 
+                                        std::numeric_limits<int>::max());
+        for (int machine : machines) {
+            for (int task : tasks) {
+                if (solution[machine].size() <= 0) {
+                    int currCost = getTotalTime(task, task, machine);
+                    if (currCost < std::get<2>(bestCandidate)) {
+                        bestCandidate = std::make_tuple(task, machine, currCost);
+                    }
+                } else {
+                    int currCost = getTotalTime(solution[machine].back(), task,
+                                                machine);
+                    if (currCost < std::get<2>(bestCandidate)) {
+                        bestCandidate = std::make_tuple(task, machine, currCost);
+                    }
+                }
+            }
+        }
+                
+        solution[std::get<1>(bestCandidate)].push_back(std::get<0>(bestCandidate));
+        std::vector<int>::iterator it = std::find(tasks.begin(), tasks.end(), 
+                                            std::get<0>(bestCandidate));
+        int index = std::distance(tasks.begin(), it);
+        tasks.erase(tasks.begin()+index);
     }
-
-    std::cout << "}\n";
-
-    // a solution is a vector of machines, where each position (idx) refers to
-    // a task
+    
     return solution;
 } // end method
 
 // -----------------------------------------------------------------------------
-
-int Grasp::evaluateSolution(const std::vector<int> &solution) {
+//int Grasp::getTotalTime(int predTask, int succTask, int machine)
+int Grasp::evaluateSolution(const std::vector<int> &solution, int machine) {
     int cost = 0;
-
+    
     for (int i = 0; i < solution.size(); i++) {
         if (i == 0) {
-            cost += getTotalTime(i, i, solution[i]);
+            cost += getTotalTime(solution[i], solution[i], machine);
         } else {
-            cost += getTotalTime(i - 1, i, solution[i]);
+            cost += getTotalTime(solution[i-1], solution[i], machine);
         }
     }
 
@@ -130,6 +151,8 @@ void Grasp::addEliteSolution(const std::pair<std::vector<int>, int> &solution) {
     if (solution.second < eliteSolutions.back().second) {
         eliteSolutions.pop_back();
         eliteSolutions.push_back(solution);
+    } else {
+        return;
     }
 
     std::sort(eliteSolutions.begin(), eliteSolutions.end(), sort);

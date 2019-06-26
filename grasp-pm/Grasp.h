@@ -8,6 +8,7 @@
 #include <string>
 #include <fstream>
 #include <random>
+#include <tuple>
 #include <utility>
 
 #define ELITE_TOTAL 10
@@ -17,8 +18,8 @@ public:
     Grasp(const std::string &);
     virtual ~Grasp();
     
-    int getMachines() const;
-    int getTasks() const;
+    int getNumMachines() const;
+    int getNumTasks() const;
 
     int getProcTime(int, int) const;
     int getSetupTime(int, int, int) const;
@@ -27,16 +28,17 @@ public:
     
     void printStructures();
     
-    std::vector<int> createInitialSolution(long);
+    std::vector<std::vector<int>> createInitialSolution(long);
     
-    int evaluateSolution(const std::vector<int> &);
+    int evaluateSolution(const std::vector<int> &solution, int machine);
     
     void addEliteSolution(const std::pair<std::vector<int>, int> &);
     
 private:
     // attributes
-    int machines;
-    int tasks;
+    int numMachines;
+    int numTasks;
+    std::vector<std::vector<int>> tasksPerMachine;
     std::vector<std::vector<int>> procTimes;
     std::vector<std::vector<std::vector<int>>> setupTimes;
     std::vector<std::pair<std::vector<int>, int>> eliteSolutions;

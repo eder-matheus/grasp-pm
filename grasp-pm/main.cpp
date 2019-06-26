@@ -17,11 +17,19 @@ int main(int argc, char **argv) {
    
    Grasp grasp(argv[1]);
    grasp.printStructures();
-   std::vector<int> Si;
+   std::vector<std::vector<int>> Si;
+   std::cout << "Initial solution\n";
    Si = grasp.createInitialSolution(seed);
    
-   int cost = grasp.evaluateSolution(Si);
-   std::cout << "Solution cost: " << cost << "\n";
+   for (int i = 0; i < Si.size(); i++) {
+       int cost = 0;
+       cost = grasp.evaluateSolution(Si[i], i);
+       std::cout << "Machine " << i << ": \n";
+       std::cout << "Cost " << cost << "\n";
+       for (int j = 0; j < Si[i].size(); j++) {
+           std::cout << "\t Task " << Si[i][j] << "\n";
+       }
+   }
 
    return 0;
 }
