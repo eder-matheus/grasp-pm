@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     alpha /= 100;
 
     Grasp grasp(argv[1]);
-    grasp.printStructures();
+
     std::vector<std::vector<int>> Si;
     Si = grasp.createInitialSolution();
 
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     std::vector<std::vector<int>> partialSolution;
     std::vector<std::vector<int>> localSearchSol;
     int lastCost = std::numeric_limits<int>::max();
-    int counter = 100;
+    int counter = 10000;
     do {
         partialSolution = grasp.greedRandomizedSolution(alpha, seed*counter);
             
@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
         }
         
         counter--;
-    } while (noImprovement < 1000);
+    } while (noImprovement < 10000);
     
     std::vector<std::pair<std::vector<std::vector<int>>, int>> elite = grasp.getEliteSolutions();
     std::cout << "Final cost: " << elite.back().second << "\n";
